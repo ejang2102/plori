@@ -7,6 +7,8 @@ abstract: >-
   drift and rotation of a free-floating organoid by referencing each pixel to its
   own recent resting level rather than to a single fixed frame.
 version: 1.0.0
+doi: 10.5281/zenodo.22095623
+repository-code: "https://github.com/ejang2102/plori"
 license: GPL-3.0-or-later
 type: software
 authors:

@@ -1,5 +1,7 @@
 # PLoRI — Per-pixel Local Rest-referenced Intensity
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22095623.svg)](https://doi.org/10.5281/zenodo.22095623)
+
 PLoRI extracts a cardiac **contraction waveform** and **per-beat metrics** directly from a brightfield video of a beating cardiac organoid. It needs **no fluorescent label and no specialized imaging equipment** — only the raw brightfield video and a handful of standard scientific-Python packages.
 
 This repository accompanies the PLoRI paper and reproduces the method and its baseline comparisons on any input video, including a synthetic clip generated here so the full pipeline can be run without proprietary data.
