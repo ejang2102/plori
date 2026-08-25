@@ -1,0 +1,14 @@
+# Generated demo artifacts (regenerate with scripts/make_synthetic.py + run_plori.py)
+examples/out/
+examples/batch_out/
+examples/*.mp4
+
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+.eggs/
+
+.DS_Store

@@ -1,0 +1,8 @@
+# PLoRI runtime dependencies (standard scientific-Python packages).
+# Version floors are conservative; the pipeline was validated with the pinned
+# versions noted in the comments (Python 3.11).
+numpy>=1.23        # validated with 2.1.1
+scipy>=1.9         # validated with 1.17.1
+opencv-python>=4.6 # validated with 4.13.0
+matplotlib>=3.6    # validated with 3.11.0  (report cards only)
+openpyxl>=3.1      # validated with 3.1.5   (spreadsheet export only)

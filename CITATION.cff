@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the accompanying paper."
+title: "PLoRI — Per-pixel Local Rest-referenced Intensity"
+abstract: >-
+  A label-free method that extracts a cardiac contraction waveform and per-beat
+  metrics directly from brightfield cardiac-organoid video. It stays robust to the
+  drift and rotation of a free-floating organoid by referencing each pixel to its
+  own recent resting level rather than to a single fixed frame.
+version: 1.0.0
+license: GPL-3.0-or-later
+type: software
+authors:
+  - given-names: "Eunji"
+    family-names: "Jang"
+preferred-citation:
+  type: article
+  title: "TODO: paper title"
+  authors:
+    - given-names: "Eunji"
+      family-names: "Jang"
+  journal: "TODO: journal"
+  year: 2026

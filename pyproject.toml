@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "plori"
+version = "1.0.0"
+description = "PLoRI — Per-pixel Local Rest-referenced Intensity: drift-robust, label-free cardiac contraction analysis from brightfield organoid video"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "GPL-3.0-or-later" }
+authors = [{ name = "Eunji Jang" }]
+keywords = ["cardiac organoid", "contraction", "brightfield", "image analysis", "beat metrics"]
+dependencies = [
+    "numpy>=1.23",
+    "scipy>=1.9",
+    "opencv-python>=4.6",
+    "matplotlib>=3.6",
+    "openpyxl>=3.1",
+]
+
+[tool.setuptools.packages.find]
+include = ["plori*"]
