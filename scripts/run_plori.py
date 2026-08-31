@@ -76,18 +76,19 @@ def main():
         speed = FL.masked_flow_speed(g, out["mask"], fps, px2um)
         out["flow_speed"] = speed
         out.update(FL.beat_mechanics(speed, out["ons"], out["offs"], fps, float(out["size_um"])))
-        print(f"    masked-flow: max_speed={out['max_speed_med']:.2f}µm/s "
-              f"displacement={out['displacement_med']:.2f}µm strain={out['strain_med']:.4f} (per-beat medians)")
 
     od = os.path.join(a.out_dir, a.cat, name)
     os.makedirs(od, exist_ok=True)
     saver = np.savez_compressed if "pixraw" in out else np.savez
     fp = os.path.join(od, f"{a.cat}_{name}_ploridata.npz")
-    saver(fp, **out)
+    saver(fp, **out)   # save BEFORE any summary print: a stdout encoding error must never lose a finished result
 
     print(f"[{a.cat}] {name}: fps={fps:.2f} T={len(g)} beats={len(out['pk'])} "
           f"k={int(out['k'])} BPM={float(out['bpm_pk']):.0f} "
           f"CD50={float(out['cd50_med']):.0f}ms drift={float(out['drift_um']):.0f}um")
+    if a.with_flow:
+        print(f"    masked-flow: max_speed={out['max_speed_med']:.2f}um/s "
+              f"displacement={out['displacement_med']:.2f}um strain={out['strain_med']:.4f} (per-beat medians)")
     print(f"wrote {fp}")
 
 

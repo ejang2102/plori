@@ -18,6 +18,7 @@ with px2um = 1 the same quantities are expressed in pixels instead of µm.
 """
 import numpy as np
 import cv2
+from scipy.integrate import trapezoid   # np.trapz was removed in the numpy 2.x line; scipy is already a dependency
 
 # Same Farneback parameters as the ContractionWave port, so the underlying flow
 # estimate is comparable; only the spatial reduction (mask vs whole frame) differs.
@@ -73,7 +74,7 @@ def beat_mechanics(speed, ons, offs, fps, size_um):
             continue
         seg = speed[a:b + 1]
         ms.append(float(seg.max()))
-        d = 0.5 * float(np.trapz(seg, dx=1.0 / fps))          # µm (fps cancels: this is a distance)
+        d = 0.5 * float(trapezoid(seg, dx=1.0 / fps))         # µm (fps cancels: this is a distance)
         disp.append(d)
         strain.append(d / size_um if size_um else float("nan"))
     ms = np.array(ms); disp = np.array(disp); strain = np.array(strain)

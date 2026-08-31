@@ -209,7 +209,7 @@ def analyze(g, fps, mpp, mag, scale, pixcap=3000, dilate=3, mask_mode="union", s
         frame_diam.append(2*math.sqrt(mi.sum()*px*px/math.pi))   # per-frame equiv-diameter (µm); union OVER-estimates size under drift
     if fill: union=binary_fill_holes(union)                      # also close holes enclosed only in the OR union (per-frame open bays that the moving rim seals)
     mask_last=segment(g[-1],dilate,fill=fill)
-    mask = union if mask_mode=="union" else mask_median              # signal mask (per mask_mode)
+    mask = union if mask_mode=="union" else (segment(med,dilate,fill=True) if fill else mask_median)  # signal mask honours --fill in median mode too; mask_median stays unfilled for opacity
     gf=g.reshape(T,-1)
     sig_mask = _dynamic_range_mask(gf, mask, drop_frac) if dynrange_filter else mask   # dynamic-range filter: drop the narrow-spread (p95−p50) lowest fraction
     pixraw=pix_idx=None

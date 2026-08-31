@@ -26,11 +26,26 @@ from openpyxl.styles import Font, Alignment
 from openpyxl.utils import get_column_letter
 
 
-def safe_sheet(name, prefix):
+def safe_sheet(name, prefix, used):
+    """Build a unique, Excel-legal (<=31 char) sheet name. openpyxl SILENTLY appends a
+    suffix to a duplicate title, so two samples sharing a name (e.g. across categories)
+    would yield indistinguishable sheets. Disambiguate deterministically and WARN."""
     s = f"{prefix}{name}"
     for c in '[]:*?/\\':
         s = s.replace(c, "_")
-    return s[:31]
+    s = s[:31]
+    if s in used:
+        i = 1
+        while True:
+            suf = f"~{i}"
+            cand = s[:31 - len(suf)] + suf
+            if cand not in used:
+                print(f"WARNING: sheet-name collision {s!r} -> {cand!r} "
+                      f"(names not unique within 31 chars); rename samples to disambiguate.", flush=True)
+                s = cand; break
+            i += 1
+    used.add(s)
+    return s
 
 
 # (npz key, column title, unit/description)
@@ -126,9 +141,12 @@ def main():
         wsS.column_dimensions[get_column_letter(j)].width = 13
     wsS.freeze_panes = "A2"
 
+    used_sheets = set()   # guard against silent openpyxl sheet-name collisions (same name across categories)
     for row, fp in enumerate(fps_list, 2):
         d = np.load(fp, allow_pickle=True)
         name = str(d["name"])
+        cat = str(d["cat"]) if "cat" in d.files else ""
+        ident = f"{cat}_{name}" if cat else name   # category-qualified so t0h/t24h/... samples get distinct sheets
         # --- Summary row ---
         for j, (key, _, _) in enumerate(SUMMARY_COLS, 1):
             v = d[key] if key in d.files else ""
@@ -157,7 +175,7 @@ def main():
         if "flow_speed" in d.files:                                  # masked optical flow speed(t) µm/s (only with --with-flow)
             cols.append(("masked_flow_umps", np.asarray(d["flow_speed"], float)))
         cols.append(("dPLoRI_dt", dd))
-        wsT = wb.create_sheet(safe_sheet(name, "TS_"))
+        wsT = wb.create_sheet(safe_sheet(ident, "TS_", used_sheets))
         for j, (h, _) in enumerate(cols, 1):
             wsT.cell(1, j, h).font = Font(bold=True)
         wsT.freeze_panes = "A2"
@@ -173,19 +191,49 @@ def main():
         # --- Per-beat sheet ---
         pk = np.asarray(d["pk"]).astype(float)
         ons = np.asarray(d["ons"], float); offs = np.asarray(d["offs"], float)
-        wsB = wb.create_sheet(safe_sheet(name, "beats_"))
+        wsB = wb.create_sheet(safe_sheet(ident, "beats_", used_sheets))
         bh = ["beat", "peak_time_s"] + [t for t, _ in BEAT_COLS] + ["onset_s", "offset_s"]
         for j, h in enumerate(bh, 1):
             wsB.cell(1, j, h).font = Font(bold=True)
         wsB.freeze_panes = "A2"
-        for i in range(len(pk)):
+        # Per-beat arrays are row-aligned to `pk` ONLY if no beat was skipped. beat_metrics
+        # drops beats with A<=0 (so cd50/ct/rt/amp/ons/offs may be shorter) and beat_mechanics
+        # drops windows < 2 frames (so max_speed/displacement/strain may be shorter still), each
+        # by a DIFFERENT rule. Writing arr[i] against pk-row i would then splice metrics from
+        # different beats into one row. So: emit a per-beat column only when its length matches
+        # the peak count; otherwise leave it blank and warn (use the Summary medians instead).
+        nbeats = len(pk); blanked = []
+        beat_arr = {}
+        for title, key in BEAT_COLS:
+            if key not in d.files:
+                beat_arr[key] = None                       # metric absent (e.g. no --with-flow) — blank silently
+                continue
+            arr = np.asarray(d[key], float)
+            if key == "ivl_ms":
+                # intervals are inherently n-1 (between consecutive peaks): row i = beat i's forward
+                # interval, last row blank. Aligned by construction — accept n or n-1, never warn.
+                beat_arr[key] = arr if len(arr) in (nbeats, nbeats - 1) else None
+            elif len(arr) == nbeats:
+                beat_arr[key] = arr
+            else:
+                beat_arr[key] = None
+            if beat_arr[key] is None and key != "ivl_ms":
+                blanked.append(title)
+        ons_ok = len(ons) == nbeats; offs_ok = len(offs) == nbeats
+        if not ons_ok: blanked.append("onset_s")
+        if not offs_ok: blanked.append("offset_s")
+        for i in range(nbeats):
             wsB.cell(i + 2, 1, i + 1)
             wsB.cell(i + 2, 2, round(pk[i] / fps, 4))
             for j, (_, key) in enumerate(BEAT_COLS, 3):
-                arr = np.asarray(d[key], float) if key in d.files else np.array([])   # flow cols absent without --with-flow
-                wsB.cell(i + 2, j, round(float(arr[i]), 4) if i < len(arr) else "")
-            wsB.cell(i + 2, len(bh) - 1, round(ons[i] / fps, 4) if i < len(ons) else "")
-            wsB.cell(i + 2, len(bh),     round(offs[i] / fps, 4) if i < len(offs) else "")
+                arr = beat_arr[key]
+                wsB.cell(i + 2, j, round(float(arr[i]), 4) if (arr is not None and i < len(arr)) else "")
+            wsB.cell(i + 2, len(bh) - 1, round(ons[i] / fps, 4) if ons_ok else "")
+            wsB.cell(i + 2, len(bh),     round(offs[i] / fps, 4) if offs_ok else "")
+        if blanked:
+            print(f"WARNING: {name}: {nbeats} peaks but per-beat column(s) {blanked} have a different "
+                  f"length (beats skipped in metric/mechanics computation) — left blank to avoid "
+                  f"row misalignment; use the Summary medians.", flush=True)
         print(f"[{name}] T={T} beats={len(pk)} sheets: TS_/beats_", flush=True)
 
     os.makedirs(os.path.dirname(a.out) or ".", exist_ok=True)

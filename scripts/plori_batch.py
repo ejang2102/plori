@@ -92,7 +92,7 @@ def main():
             saver(os.path.join(od, f"{cat}_{name}_ploridata.npz"), **out)
             ok += 1
             print(f"[{cat}] {name}: fps={fps:.2f} T={len(g)} beats={len(out['pk'])} k={int(out['k'])} "
-                  f"BPM={float(out['bpm_pk']):.0f} CD50={float(out['cd50_med']):.0f}ms drift={float(out['drift_um']):.0f}µm", flush=True)
+                  f"BPM={float(out['bpm_pk']):.0f} CD50={float(out['cd50_med']):.0f}ms drift={float(out['drift_um']):.0f}um", flush=True)
         except Exception as e:
             import traceback; print(f"{name} FAIL: {e}\n{traceback.format_exc()[:300]}", flush=True)
     print(f"DONE {ok}/{len(vids)}", flush=True)
