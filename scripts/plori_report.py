@@ -50,9 +50,10 @@ def render(fp, out_dir, by_cat=False):
     dr = float(d["drift_um"]); warn = "  HIGH DRIFT" if dr > 0.15 * float(d["size_um"]) else ""
     axI.set_title(f"{top} · drift {dr:.0f}µm{warn}", fontsize=8)
     axI.set_xlabel(cap, fontsize=7); axI.set_xticks([]); axI.set_yticks([])
-    if flags:                                                          # QC badge = top-left of thumbnail (does not cover the text panel)
+    badge = [f for f in flags if f != "high_drift"]                    # high_drift is already shown in the title → avoid a duplicate chip
+    if badge:                                                          # QC badge = top-left of thumbnail (does not cover the text panel)
         FLAG_LABEL = {"low_signal": "failure suspected", "irregular_rhythm": "irregular rhythm"}
-        axI.text(0.03, 0.97, "QC: " + " · ".join(FLAG_LABEL.get(f, f) for f in flags), transform=axI.transAxes,
+        axI.text(0.03, 0.97, "QC: " + " · ".join(FLAG_LABEL.get(f, f) for f in badge), transform=axI.transAxes,
                  va="top", ha="left", color="white", fontsize=7.5, bbox=dict(fc="#d62728", ec="none", pad=2), zorder=5)
     # --- metrics text ---
     axT = fig.add_subplot(gs[1:, 0]); axT.axis("off")

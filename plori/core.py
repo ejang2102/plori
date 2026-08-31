@@ -235,4 +235,7 @@ def analyze(g, fps, mpp, mag, scale, pixcap=3000, dilate=3, mask_mode="union", s
         mag=mag,mpp=mpp,fullres=f"{int(round(W/scale))}x{int(round(H/scale))}",dur=T/fps,nframes=T,
         opacity_class=("opaque" if opac>80 else "translucent"))
     if pixraw is not None: out.update(pixraw=pixraw, pix_idx=pix_idx.astype(np.int32))
-    out.update(m); return out
+    out.update(m)
+    if drift > 0.15 * size:                                  # high_drift: 6th QC flag (same threshold as plori_report's HIGH DRIFT badge, dr>0.15*size_um)
+        out["flags"] = f"{out['flags']}|high_drift" if out["flags"] else "high_drift"
+    return out

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "plori"
-version = "1.0.0"
+version = "1.0.3"
 description = "PLoRI — Per-pixel Local Rest-referenced Intensity: drift-robust, label-free cardiac contraction analysis from brightfield organoid video"
 readme = "README.md"
 requires-python = ">=3.9"

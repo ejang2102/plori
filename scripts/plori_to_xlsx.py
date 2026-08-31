@@ -232,7 +232,7 @@ def main():
             wsB.cell(i + 2, len(bh),     round(offs[i] / fps, 4) if offs_ok else "")
         if blanked:
             print(f"WARNING: {name}: {nbeats} peaks but per-beat column(s) {blanked} have a different "
-                  f"length (beats skipped in metric/mechanics computation) — left blank to avoid "
+                  f"length (beats skipped in metric/mechanics computation) - left blank to avoid "
                   f"row misalignment; use the Summary medians.", flush=True)
         print(f"[{name}] T={T} beats={len(pk)} sheets: TS_/beats_", flush=True)
 
